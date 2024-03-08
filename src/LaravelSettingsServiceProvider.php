@@ -18,6 +18,7 @@ class LaravelSettingsServiceProvider extends PackageServiceProvider
     {
         $this->app->singleton(Settings::class, function () {
             $settingsClass = config('settings.provider');
+
             return new $settingsClass();
         });
     }

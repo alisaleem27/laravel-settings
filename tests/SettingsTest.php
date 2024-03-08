@@ -15,7 +15,7 @@ beforeEach(function () {
 
 it('can read config from storage', function () {
     $values = [
-        'text'    => 'hello',
+        'text' => 'hello',
         'integer' => 123,
     ];
     $this->storage()->put(config('settings.storage.path'), json_encode($values));
@@ -30,7 +30,7 @@ it('can write config to storage', function () {
 
     $values = json_decode($this->storage()->get(config('settings.storage.path')), true);
     expect($values)->toBe([
-        'text'    => 'hello',
+        'text' => 'hello',
         'integer' => 123,
     ]);
 });
@@ -59,7 +59,7 @@ it('throws exception on invalid keys', function () {
     new Field('Invalid Key');
 })->expectException(InvalidArgumentException::class);
 
-it('removes storage file if there are no settings', function(){
+it('removes storage file if there are no settings', function () {
     settings()->text = 'hello';
     unset(settings()->text);
 

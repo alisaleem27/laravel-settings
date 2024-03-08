@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 class Settings
 {
     protected Valuestore $store;
+
     protected Collection $schema;
 
     public function __construct()
@@ -57,7 +58,7 @@ class Settings
     {
         return match ($type) {
             Type::CSV => $value ? str_getcsv($value) : [],
-            default   => $value,
+            default => $value,
         };
     }
 
@@ -69,10 +70,10 @@ class Settings
 
         return match ($type) {
             Type::Boolean => boolval($value),
-            Type::CSV     => $value ? $this->toCSV($value) : null,
+            Type::CSV => $value ? $this->toCSV($value) : null,
             Type::Integer => intval($value),
-            Type::Float   => floatval($value),
-            Type::Text    => (string)$value,
+            Type::Float => floatval($value),
+            Type::Text => (string) $value,
         };
     }
 

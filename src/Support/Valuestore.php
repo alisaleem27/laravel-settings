@@ -29,7 +29,7 @@ class Valuestore extends \Spatie\Valuestore\Valuestore
         $this->storage()->put($this->fileName, json_encode($values));
 
         if (! count($values)) {
-            $this->storage()->delete($this->fileName);;
+            $this->storage()->delete($this->fileName);
         }
 
         return $this;
@@ -37,6 +37,6 @@ class Valuestore extends \Spatie\Valuestore\Valuestore
 
     protected function storage()
     {
-        return Storage::when($this->disk, fn($storage) => $storage->disk($this->disk));
+        return Storage::when($this->disk, fn ($storage) => $storage->disk($this->disk));
     }
 }
