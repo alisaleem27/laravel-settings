@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 class Valuestore extends \Spatie\Valuestore\Valuestore
 {
     protected ?string $disk;
+
     protected $storage;
 
     public function __construct()
@@ -24,7 +25,7 @@ class Valuestore extends \Spatie\Valuestore\Valuestore
 
     public function all(): array
     {
-        if (!$this->storage->exists($this->fileName)) {
+        if (! $this->storage->exists($this->fileName)) {
             return [];
         }
 
@@ -36,7 +37,7 @@ class Valuestore extends \Spatie\Valuestore\Valuestore
         $this->storage->put($this->fileName, json_encode($values));
 
         if (! count($values)) {
-            $this->storage->delete($this->fileName);;
+            $this->storage->delete($this->fileName);
         }
 
         return $this;

@@ -3,8 +3,10 @@
 use AliSaleem\LaravelSettings\Settings;
 
 beforeEach(function () {
-    $this->app->singleton(Settings::class, fn () => new class(config('settings')) extends Settings {
+    $this->app->singleton(Settings::class, fn () => new class(config('settings')) extends Settings
+    {
         public string $string = 'hello';
+
         public int $int = 123;
     });
 });
@@ -12,7 +14,7 @@ beforeEach(function () {
 it('can read config from storage', function () {
     $values = [
         'string' => 'random text',
-        'int'    => 456,
+        'int' => 456,
     ];
 
     $this->storage()->put(config('settings.storage.path'), json_encode($values));
@@ -30,6 +32,6 @@ it('can write config to storage', function () {
     $values = json_decode($this->storage()->get(config('settings.storage.path')), true);
     expect($values)->toBe([
         'string' => 'random text',
-        'int'    => 456,
+        'int' => 456,
     ]);
 });

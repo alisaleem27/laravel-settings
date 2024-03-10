@@ -9,6 +9,7 @@ use ReflectionProperty;
 abstract class Settings
 {
     protected Valuestore $store;
+
     protected Collection $schema;
 
     public function __construct(protected array $config)
@@ -42,7 +43,7 @@ abstract class Settings
     {
         return match ($type) {
             'array' => $value ? str_getcsv($value) : [],
-            default   => $value,
+            default => $value,
         };
     }
 
@@ -53,11 +54,11 @@ abstract class Settings
         }
 
         return match ($type) {
-            'array'  => $value ? $this->toCSV($value) : null,
-            'bool'   => boolval($value),
-            'float'  => floatval($value),
-            'int'    => intval($value),
-            'string' => (string)$value,
+            'array' => $value ? $this->toCSV($value) : null,
+            'bool' => boolval($value),
+            'float' => floatval($value),
+            'int' => intval($value),
+            'string' => (string) $value,
         };
     }
 
