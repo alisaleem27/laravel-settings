@@ -2,78 +2,62 @@
 
 namespace AliSaleem\LaravelSettings;
 
-use AliSaleem\LaravelSettings\Support\Type;
-use AliSaleem\LaravelSettings\Support\Valuestore;
 use Illuminate\Support\Collection;
+use ReflectionClass;
+use ReflectionProperty;
 
-class Settings
+abstract class Settings
 {
     protected Valuestore $store;
-
     protected Collection $schema;
 
-    public function __construct()
+    public function __construct(protected array $config)
     {
-        $this->store = Valuestore::make(config('settings.storage.path'))->setDisk(config('settings.storage.disk'));
-        $this->schema = collect(config('settings.schema'))->keyBy('key');
+        $this->store = Valuestore::make(data_get($config, 'storage.path'))->setDisk(data_get($config, 'storage.disk'));
+
+        $this->schema = collect((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC))
+            ->keyBy(fn (ReflectionProperty $property) => $property->getName())
+            ->map(fn (ReflectionProperty $property) => $property->getType()->getName());
+
+        $this->schema
+            ->filter(fn ($type, $property) => $this->store->has($property))
+            ->each(function ($type, $property) {
+                $this->$property = $this->hydrate($this->store->get($property), $type);
+            });
     }
 
-    public function __get(string $name): mixed
+    public function __destruct()
     {
-        return $this->get($name);
+        $this->persist();
     }
 
-    public function get(string $key): float|int|bool|array|string|null
+    public function persist(): void
     {
-        $value = $this->store->get($key);
-
-        return $this->hydrate($value, $this->schema->get($key)->type);
+        $this->schema->each(function ($type, $property) {
+            $this->store->put($property, $this->dehydrate($this->$property, $this->schema->get($property)));
+        });
     }
 
-    public function __set(string $name, $value): void
-    {
-        $this->set($name, $value);
-    }
-
-    public function set(string $key, $value): static
-    {
-        $this->store->put($key, $this->dehydrate($value, $this->schema->get($key)->type));
-
-        return $this;
-    }
-
-    public function __unset(string $name): void
-    {
-        $this->forget($name);
-    }
-
-    public function forget(string $key): static
-    {
-        $this->store->forget($key);
-
-        return $this;
-    }
-
-    protected function hydrate($value, Type $type): float|int|bool|array|string|null
+    protected function hydrate($value, string $type): array|bool|float|int|string|null
     {
         return match ($type) {
-            Type::CSV => $value ? str_getcsv($value) : [],
-            default => $value,
+            'array' => $value ? str_getcsv($value) : [],
+            default   => $value,
         };
     }
 
-    protected function dehydrate($value, Type $type): float|int|bool|string|null
+    protected function dehydrate($value, string $type): bool|float|int|string|null
     {
         if (is_null($value)) {
             return null;
         }
 
         return match ($type) {
-            Type::Boolean => boolval($value),
-            Type::CSV => $value ? $this->toCSV($value) : null,
-            Type::Integer => intval($value),
-            Type::Float => floatval($value),
-            Type::Text => (string) $value,
+            'array'  => $value ? $this->toCSV($value) : null,
+            'bool'   => boolval($value),
+            'float'  => floatval($value),
+            'int'    => intval($value),
+            'string' => (string)$value,
         };
     }
 
