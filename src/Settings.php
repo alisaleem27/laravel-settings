@@ -19,18 +19,19 @@ abstract class Settings
         $this->store = Valuestore::make(data_get($config, 'storage.path'))->setDisk(data_get($config, 'storage.disk'));
 
         collect((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC))
-            ->keyBy(fn (ReflectionProperty $property) => $property->getName())
-            ->map(fn (ReflectionProperty $property) => $property->getType()->getName())
-            ->each(function ($property) {
-                $this->original[$property] = $property->isInitialized($this)
-                    ? $this->$property
+            ->each(function (ReflectionProperty $property, string $name) {
+                $this->original[$property->getName()] = $property->isInitialized($this)
+                    ? $property->getValue($this)
                     : null;
             })
-            ->filter(fn ($type, $property) => $this->store->has($property))
-            ->each(function ($type, $property) {
-                $value = $this->hydrate($this->store->get($property), $type);
-                $this->$property = $value;
-                $this->original[$property] = $value;
+            ->filter(fn (ReflectionProperty $property) => $this->store->has($property->getName()))
+            ->each(function (ReflectionProperty $property) {
+                $value = $this->hydrate(
+                    $this->store->get($property->getName()),
+                    $property->getType()->getName()
+                );
+                $property->setValue($this, $value);
+                $this->original[$property->getName()] = $value;
             });
     }
 
@@ -42,13 +43,15 @@ abstract class Settings
     public function persist(): void
     {
         collect((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC))
-            ->filter(fn (ReflectionProperty $property) => $property->isInitialized($this))
-            ->keyBy(fn (ReflectionProperty $property) => $property->getName())
-            ->map(fn (ReflectionProperty $property) => $property->getType()->getName())
-            ->filter(fn ($type, $property) => array_key_exists($property, $this->original) && $this->original[$property] !== $this->$property)
-            ->each(function ($type, $property) {
-                $this->store->put($property, $this->dehydrate($this->$property, $type));
-                $this->original[$property] = $this->$property;
+            ->filter(fn (ReflectionProperty $property) => $property->isInitialized($this)
+                && $this->original[$property->getName()] !== $property->getValue($this)
+            )
+            ->each(function (ReflectionProperty $property) {
+                $this->store->put(
+                    $property->getName(),
+                    $this->dehydrate($property->getValue($this), $property->getType()->getName())
+                );
+                $this->original[$property->getName()] = $property->getValue($this);
             });
     }
 
