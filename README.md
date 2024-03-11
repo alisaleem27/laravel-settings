@@ -3,7 +3,11 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/alisaleem/laravel-settings.svg?style=flat-square)](https://packagist.org/packages/alisaleem/laravel-settings)
 [![Total Downloads](https://img.shields.io/packagist/dt/alisaleem/laravel-settings.svg?style=flat-square)](https://packagist.org/packages/alisaleem/laravel-settings)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+Store your application settings in any of your applications storage filesystems. The schema for the settings is defined
+by a normal PHP class and all primitive types are supported. This also provides IDE type hints when reading to writing
+settings.
+
+Updated values are written to the filesystem on destruct.
 
 ## Installation
 
@@ -13,26 +17,58 @@ You can install the package via composer:
 composer require alisaleem/laravel-settings
 ```
 
+Create your own Settings class and extend the abstract Settings class from this package
+
+```php
+namespace App;
+
+class MySettings extends \AliSaleem\LaravelSettings\Settings
+{
+    public string $key;
+    public string $anotherKey = 'Default Value';
+}
+```
+
+Optionally add the helper function. This will also provide IDE type-hinting
+
+```php
+if (! function_exists('settings')) {
+    function settings(): \App\MySettings
+    {
+        return resolve(config('settings.class'));
+    }
+}
+```
+
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-settings-config"
+php artisan vendor:publish --tag="settings-config"
 ```
 
-This is the contents of the published config file:
+Set the class and storage location in the config file
 
 ```php
 return [
-    'provider' => \App\Support\Settings::class,
-    'storage'  => storage_path('app/settings.json'),
+    'class' => \App\MySettings::class,
+
+    'storage' => [
+        'disk' => null,
+        'path' => 'settings.json',
+    ],
 ];
 ```
 
 ## Usage
 
 ```php
-$laravelSettings = new AliSaleem\LaravelSettings();
-echo $laravelSettings->echoPhrase('Hello, AliSaleem!');
+// To retrieve a value
+$value = resolve(\App\MySettings::class)->key;
+$value = settings()->anotherKey;
+
+// To set a value
+resolve(\App\MySettings::class)->key = 'changed';
+settings()->anotherKey = 'changed';
 ```
 
 ## Testing
