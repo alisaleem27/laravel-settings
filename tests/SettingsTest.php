@@ -5,10 +5,14 @@ declare(strict_types=1);
 use AliSaleem\LaravelSettings\Settings;
 
 beforeEach(function () {
-    $this->app->singleton(config('settings.class'), fn () => new class(config('settings')) extends Settings {
+    $this->app->singleton(config('settings.class'), fn () => new class(config('settings')) extends Settings
+    {
         public string $string = '';
+
         public int $int = 0;
+
         public array $array = ['One', 'Two', 'Three'];
+
         public \Illuminate\Support\Collection $collection;
     });
 });
@@ -16,7 +20,7 @@ beforeEach(function () {
 it('can read config from storage', function () {
     $values = [
         'string' => 'random text',
-        'int'        => 123,
+        'int' => 123,
         'collection' => collect(['Five'])->toJson(),
     ];
 
@@ -38,8 +42,8 @@ it('can write config to storage', function () {
     $values = json_decode($this->storage()->get(config('settings.storage.path')), true);
     expect($values)->toBe([
         'string' => 'random text',
-        'int'        => 123,
-        'array'      => json_encode(['Four']),
+        'int' => 123,
+        'array' => json_encode(['Four']),
         'collection' => json_encode(['Five']),
     ]);
 });

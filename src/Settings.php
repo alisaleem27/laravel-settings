@@ -44,7 +44,7 @@ abstract class Settings
     protected function hydrate($value, string $type): array|bool|float|int|string|Collection|null
     {
         return match ($type) {
-            'array'           => json_decode($value, true),
+            'array' => json_decode($value, true),
             Collection::class => collect(json_decode($value, true)),
             default => $value,
         };
@@ -57,9 +57,9 @@ abstract class Settings
         }
 
         return match ($type) {
-            'array'           => json_encode($value),
+            'array' => json_encode($value),
             Collection::class => $value->toJson(),
-            default           => $value,
+            default => $value,
         };
     }
 }

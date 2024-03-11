@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 class Valuestore extends \Spatie\Valuestore\Valuestore
 {
     protected ?string $disk;
+
     protected Filesystem $storage;
 
     public function setDisk(?string $disk = null): static
