@@ -47,3 +47,17 @@ it('can write config to storage', function () {
         'collection' => json_encode(['Five']),
     ]);
 });
+
+it('writes on destruct', function () {
+    $settings = Mockery::mock(config('settings.class'), 'overload:persist');
+    $settings->shouldReceive('persist')->once();
+
+    $this->settings()->string = 'abc';
+});
+
+it('doesnt write when nothing changed', function () {
+    $settings = Mockery::mock(config('settings.class'), 'overload:persist');
+    $settings->shouldReceive('persist')->never();
+
+    $read = $this->settings()->string;
+});
