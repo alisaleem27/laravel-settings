@@ -11,6 +11,7 @@ use ReflectionProperty;
 abstract class Settings
 {
     protected Valuestore $store;
+
     protected array $original = [];
 
     public function __construct(protected array $config)
@@ -46,7 +47,7 @@ abstract class Settings
             ->filter(fn (ReflectionProperty $property) => $property->isInitialized($this))
             ->keyBy(fn (ReflectionProperty $property) => $property->getName())
             ->map(fn (ReflectionProperty $property) => $property->getType()->getName())
-            ->filter(fn($type, $property) => array_key_exists($property, $this->original) && $this->original[$property] !== $this->$property)
+            ->filter(fn ($type, $property) => array_key_exists($property, $this->original) && $this->original[$property] !== $this->$property)
             ->each(function ($type, $property) {
                 $this->store->put($property, $this->dehydrate($this->$property, $type));
                 $this->original[$property] = $this->$property;
