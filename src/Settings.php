@@ -19,15 +19,13 @@ abstract class Settings
         $this->store = Valuestore::make(data_get($config, 'storage.path'))->setDisk(data_get($config, 'storage.disk'));
 
         collect((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC))
-            ->filter(fn (ReflectionProperty $property) => $property->isInitialized($this))
-            ->map(fn (ReflectionProperty $property) => $property->getName())
-            ->each(function ($property) {
-                $this->original[$property] = $this->$property;
-            });
-
-        collect((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC))
             ->keyBy(fn (ReflectionProperty $property) => $property->getName())
             ->map(fn (ReflectionProperty $property) => $property->getType()->getName())
+            ->each(function ($property) {
+                $this->original[$property] = $property->isInitialized($this)
+                    ? $this->$property
+                    : null;
+            })
             ->filter(fn ($type, $property) => $this->store->has($property))
             ->each(function ($type, $property) {
                 $value = $this->hydrate($this->store->get($property), $type);
