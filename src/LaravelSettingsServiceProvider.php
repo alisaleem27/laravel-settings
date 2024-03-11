@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AliSaleem\LaravelSettings;
 
 use Spatie\LaravelPackageTools\Package;
@@ -16,10 +18,12 @@ class LaravelSettingsServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->singleton(Settings::class, function () {
-            $settingsClass = config('settings.class');
-
-            return new $settingsClass(config('settings'));
-        });
+        $this->app->singleton(
+            config('settings.class'),
+            fn () => with(
+                config('settings.class'),
+                fn ($class) => new $class(config('settings'))
+            )
+        );
     }
 }

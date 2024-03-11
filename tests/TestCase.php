@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AliSaleem\LaravelSettings\Tests;
 
 use AliSaleem\LaravelSettings\LaravelSettingsServiceProvider;
+use AliSaleem\LaravelSettings\Settings;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -26,5 +29,10 @@ class TestCase extends Orchestra
     public function storage(): Filesystem
     {
         return Storage::disk(config('settings.storage.disk'));
+    }
+
+    public function settings(): Settings
+    {
+        return resolve(Settings::class);
     }
 }

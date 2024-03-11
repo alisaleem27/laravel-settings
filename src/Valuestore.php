@@ -1,19 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AliSaleem\LaravelSettings;
 
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 
 class Valuestore extends \Spatie\Valuestore\Valuestore
 {
     protected ?string $disk;
-
-    protected $storage;
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    protected Filesystem $storage;
 
     public function setDisk(?string $disk = null): static
     {

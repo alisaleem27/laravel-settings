@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace AliSaleem\LaravelSettings;
 
 use Illuminate\Support\Collection;
@@ -10,17 +12,13 @@ abstract class Settings
 {
     protected Valuestore $store;
 
-    protected Collection $schema;
-
     public function __construct(protected array $config)
     {
         $this->store = Valuestore::make(data_get($config, 'storage.path'))->setDisk(data_get($config, 'storage.disk'));
 
-        $this->schema = collect((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC))
+        collect((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC))
             ->keyBy(fn (ReflectionProperty $property) => $property->getName())
-            ->map(fn (ReflectionProperty $property) => $property->getType()->getName());
-
-        $this->schema
+            ->map(fn (ReflectionProperty $property) => $property->getType()->getName())
             ->filter(fn ($type, $property) => $this->store->has($property))
             ->each(function ($type, $property) {
                 $this->$property = $this->hydrate($this->store->get($property), $type);
@@ -34,15 +32,20 @@ abstract class Settings
 
     public function persist(): void
     {
-        $this->schema->each(function ($type, $property) {
-            $this->store->put($property, $this->dehydrate($this->$property, $this->schema->get($property)));
-        });
+        collect((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC))
+            ->filter(fn (ReflectionProperty $property) => $property->isInitialized($this))
+            ->keyBy(fn (ReflectionProperty $property) => $property->getName())
+            ->map(fn (ReflectionProperty $property) => $property->getType()->getName())
+            ->each(function ($type, $property) {
+                $this->store->put($property, $this->dehydrate($this->$property, $type));
+            });
     }
 
-    protected function hydrate($value, string $type): array|bool|float|int|string|null
+    protected function hydrate($value, string $type): array|bool|float|int|string|Collection|null
     {
         return match ($type) {
-            'array' => $value ? str_getcsv($value) : [],
+            'array'           => json_decode($value, true),
+            Collection::class => collect(json_decode($value, true)),
             default => $value,
         };
     }
@@ -54,22 +57,9 @@ abstract class Settings
         }
 
         return match ($type) {
-            'array' => $value ? $this->toCSV($value) : null,
-            'bool' => boolval($value),
-            'float' => floatval($value),
-            'int' => intval($value),
-            'string' => (string) $value,
+            'array'           => json_encode($value),
+            Collection::class => $value->toJson(),
+            default           => $value,
         };
-    }
-
-    private function toCSV($array): string
-    {
-        $fp = fopen('php://temp', 'r+');
-        fputcsv($fp, $array);
-        rewind($fp);
-        $data = fread($fp, 1048576);
-        fclose($fp);
-
-        return rtrim($data, "\n");
     }
 }
