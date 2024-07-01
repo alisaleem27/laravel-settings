@@ -29,10 +29,11 @@ abstract class BaseSettings
             })
             ->filter(fn (ReflectionProperty $property) => $this->store->has($property->getName()))
             ->each(function (ReflectionProperty $property) {
-                $value = $this->hydrate(
-                    $this->store->get($property->getName()),
-                    $property->getType()->getName()
-                );
+                $rawValue = $this->store->get($property->getName());
+                if ($this->logging) {
+                    logger()->info("[Settings] read {$property->getName()}: {$rawValue}");
+                }
+                $value = $this->hydrate($rawValue, $property->getType()->getName());
                 $property->setValue($this, $value);
                 $this->original[$property->getName()] = $value;
             });
