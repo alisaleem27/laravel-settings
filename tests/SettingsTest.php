@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use AliSaleem\LaravelSettings\Settings;
+use AliSaleem\LaravelSettings\BaseSettings;
 
 beforeEach(function () {
-    $this->app->singleton(config('settings.class'), fn () => new class(config('settings')) extends Settings
+    $this->app->singleton(config('settings.class'), fn () => new class(config('settings')) extends BaseSettings
     {
         public string $string = '';
 

@@ -8,15 +8,17 @@ use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionProperty;
 
-abstract class Settings
+abstract class BaseSettings
 {
     protected Valuestore $store;
 
     protected array $original = [];
+    protected $logging = false;
 
     public function __construct(protected array $config)
     {
         $this->store = Valuestore::make(data_get($config, 'storage.path'))->setDisk(data_get($config, 'storage.disk'));
+        $this->logging = $this->config['logging'] ?? false;
 
         collect((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC))
             ->each(function (ReflectionProperty $property, string $name) {
@@ -47,10 +49,11 @@ abstract class Settings
                 && $this->original[$property->getName()] !== $property->getValue($this)
             )
             ->each(function (ReflectionProperty $property) {
-                $this->store->put(
-                    $property->getName(),
-                    $this->dehydrate($property->getValue($this), $property->getType()->getName())
-                );
+                $value = $this->dehydrate($property->getValue($this), $property->getType()->getName());
+                if ($this->logging) {
+                    logger()->log("[Settings] writing {$property->getName()}: {$value}");
+                }
+                $this->store->put($property->getName(), $value);
                 $this->original[$property->getName()] = $property->getValue($this);
             });
     }
@@ -75,5 +78,10 @@ abstract class Settings
             Collection::class => $value->toJson(),
             default => $value,
         };
+    }
+
+    public function toArray(): array
+    {
+        return $this->store->all();
     }
 }

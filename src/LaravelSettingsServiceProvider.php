@@ -13,7 +13,8 @@ class LaravelSettingsServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('settings')
-            ->hasConfigFile();
+            ->hasConfigFile()
+            ->hasCommand(InitializeSettingsCommand::class);
     }
 
     public function packageRegistered(): void

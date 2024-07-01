@@ -22,7 +22,7 @@ Create your own Settings class and extend the abstract Settings class from this 
 ```php
 namespace App;
 
-class MySettings extends \AliSaleem\LaravelSettings\Settings
+class MySettings extends \AliSaleem\LaravelSettings\BaseSettings
 {
     public string $key;
     public string $anotherKey = 'Default Value';
