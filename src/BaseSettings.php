@@ -13,6 +13,7 @@ abstract class BaseSettings
     protected Valuestore $store;
 
     protected array $original = [];
+
     protected $logging = false;
 
     public function __construct(protected array $config)

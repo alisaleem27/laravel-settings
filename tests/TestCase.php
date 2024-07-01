@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AliSaleem\LaravelSettings\Tests;
 
-use AliSaleem\LaravelSettings\LaravelSettingsServiceProvider;
 use AliSaleem\LaravelSettings\BaseSettings;
+use AliSaleem\LaravelSettings\LaravelSettingsServiceProvider;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use Orchestra\Testbench\TestCase as Orchestra;
