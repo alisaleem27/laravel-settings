@@ -52,7 +52,7 @@ abstract class BaseSettings
             ->each(function (ReflectionProperty $property) {
                 $value = $this->dehydrate($property->getValue($this), $property->getType()->getName());
                 if ($this->logging) {
-                    logger()->log("[Settings] writing {$property->getName()}: {$value}");
+                    logger()->info("[Settings] writing {$property->getName()}: {$value}");
                 }
                 $this->store->put($property->getName(), $value);
                 $this->original[$property->getName()] = $property->getValue($this);
